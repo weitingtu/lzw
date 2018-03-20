@@ -22,7 +22,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-
 #define CODE_SIZE  12
 #define TRUE 1
 #define FALSE 0
@@ -312,6 +311,7 @@ void compress( FILE* input, FILE* output )
     int index = -1;
     int P = -1;
 
+    int count = 0;
     C = getc( input );
     while ( C != EOF )
     {
@@ -364,6 +364,7 @@ void decompress( FILE* input, FILE* output )
     int previousCode;
     int currentCode;
     int firstChar;
+    int count = 0;
     currentCode = read_code( input, CODE_SIZE );
     fputc( currentCode, output );
     while ( currentCode != ( ( 1 << CODE_SIZE ) - 1 ) )
@@ -371,12 +372,13 @@ void decompress( FILE* input, FILE* output )
         previousCode = currentCode;
         currentCode = read_code( input, CODE_SIZE );
         if ( currentCode == ( ( 1 << CODE_SIZE ) - 1 ) ) { break; }
-        if ( g_NodeArray->used >= ( ( 1 << CODE_SIZE ) - 1 ) )
-        {
-            // full, re-initialize it
-            dictionaryArrayReInit();
-            previousCode = currentCode;
-        }
+//        if ( g_NodeArray->used >= ( ( 1 << CODE_SIZE ) - 1 ) )
+//        {
+//            // full, re-initialize it
+//            printf( "full %d\n", ++count );
+//            dictionaryArrayReInit();
+//            previousCode = currentCode;
+//        }
         if ( currentCode >= g_NodeArray->used )
         {
             // not found
@@ -391,6 +393,11 @@ void decompress( FILE* input, FILE* output )
         g_NodeArray->array[g_NodeArray->used].prefix = previousCode;
         g_NodeArray->array[g_NodeArray->used].character = firstChar;
         ++g_NodeArray->used;
+        if ( g_NodeArray->used >= ( ( 1 << CODE_SIZE ) - 1 ) )
+        {
+            // full, re-initialize it
+            dictionaryArrayReInit();
+        }
     }
 }
 
@@ -474,7 +481,6 @@ static void dictionary_appendNode( struct Dictionary* dict, struct DictionaryNod
 // destory the whole dictionary down to NULL
 static void dictionary_Destroy( struct Dictionary* dict )
 {
-
     while ( dict->dictionary != NULL )
     {
         struct DictionaryNode* del = dict->dictionary;

@@ -1,5 +1,5 @@
 CC = g++
-CFLAG = -O2 -lpthread
+CFLAG = -O2 -lpthread -std=c++98
 ifeq ($(MODE),rd)
 	CFLAG:=$(filter-out -O2, $(CFLAG))
     CFLAG += -g3 -gdwarf-4 -ggdb3 -DDEBUG
