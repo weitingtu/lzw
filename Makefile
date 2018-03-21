@@ -26,12 +26,12 @@ test: all
 	head -c $$size < /dev/urandom > $$size.img; \
 	cp $$size.img $$size.img.orig; \
 	md5sum $$size.img > md5; \
-	../lzw -c compress $$size.img; \
-	../lzw -d compress; \
+	time -p ../lzw -c compress $$size.img; \
+	time -p ../lzw -d compress; \
 	md5sum -c md5; \
 	done; \
 	md5sum *.img > md5; \
-	../lzw -c compress *.img; \
-	../lzw -d compress; \
+	time -p ../lzw -c compress *.img; \
+	time -p ../lzw -d compress; \
 	md5sum -c md5
 

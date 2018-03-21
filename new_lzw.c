@@ -62,7 +62,6 @@ struct DictionaryArray
 
 static void dictionaryArrayReInit();
 struct Dictionary* dictionary_init();
-//static void dictionary_appendNode( struct Dictionary* dict, struct DictionaryNode* node );
 static void dictionary_appendNode( struct Dictionary* dict, int prefix, int character, int value );
 static int dictionary_Lookup( struct Dictionary* dict, int prefix, int character );
 static void dictionary_Add( struct Dictionary* dict, int prefix, int character, int value );
@@ -450,30 +449,11 @@ struct Dictionary* dictionary_init()
     ret->map = new std::map<std::pair<int, int>, int>();
     for ( i = 0; i < 256; i++ ) // ASCII
     {
-//        node = ( struct DictionaryNode* )malloc( sizeof( struct DictionaryNode ) );
-//        node->value = i;
-//        node->prefix = -1;
-//        node->character = i;
-//        node->next = NULL;
-//        dictionary_appendNode( ret, node );
         dictionary_appendNode( ret, -1, i, i );
     }
     ret->cnt = 256;
     return ret;
 }
-
-
-// add node to the list
-//static void dictionary_appendNode( struct Dictionary* dict, struct DictionaryNode* node )
-//{
-//    if ( dict->dictionary != NULL ) { dict->tail->next = node; }
-//    else { dict->dictionary = node; }
-//    dict->tail = node;
-//    node->next = NULL;
-//    dict->cnt += 1;
-
-//    dict->map->insert( std::make_pair( std::make_pair( node->prefix, node->character ), node->value ) );
-//}
 
 static void dictionary_appendNode( struct Dictionary* dict, int prefix, int character, int value )
 {
@@ -485,12 +465,6 @@ static void dictionary_appendNode( struct Dictionary* dict, int prefix, int char
 static void dictionary_Destroy( struct Dictionary* dict )
 {
     delete dict->map;
-//    while ( dict->dictionary != NULL )
-//    {
-//        struct DictionaryNode* del = dict->dictionary;
-//        dict->dictionary = dict->dictionary->next; /* the head now links to the next element */
-//        free( del );
-//    }
     free( dict );
 }
 
@@ -503,23 +477,10 @@ static int dictionary_Lookup( struct Dictionary* dict, int prefix, int character
         return -1;
     }
     return ite->second;
-
-//    struct DictionaryNode* node;
-//    for ( node = dict->dictionary; node != NULL; node = node->next ) // ...traverse forward
-//    {
-//        if ( node->prefix == prefix && node->character == character ) { return node->value; }
-//    }
-//    return -1;
 }
 
 // add prefix + character to the dictionary
 static void dictionary_Add( struct Dictionary* dict, int prefix, int character, int value )
 {
-//    struct DictionaryNode* node;
-//    node = ( struct DictionaryNode* )malloc( sizeof( struct DictionaryNode ) );
-//    node->value = value;
-//    node->prefix = prefix;
-//    node->character = character;
-//    dictionary_appendNode( dict, node );
     dictionary_appendNode( dict, prefix, character, value );
 }
