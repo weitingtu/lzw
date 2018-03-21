@@ -21,6 +21,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
+#include <map>
 
 #define CODE_SIZE  12
 #define TRUE 1
@@ -50,6 +51,7 @@ struct Dictionary
     struct DictionaryNode* dictionary;
     struct DictionaryNode* tail;
     int cnt;
+    std::map<std::pair<int, int>, int>* map;
 };
 
 struct DictionaryArray
@@ -60,7 +62,8 @@ struct DictionaryArray
 
 static void dictionaryArrayReInit();
 struct Dictionary* dictionary_init();
-static void dictionary_appendNode( struct Dictionary* dict, struct DictionaryNode* node );
+//static void dictionary_appendNode( struct Dictionary* dict, struct DictionaryNode* node );
+static void dictionary_appendNode( struct Dictionary* dict, int prefix, int character, int value );
 static int dictionary_Lookup( struct Dictionary* dict, int prefix, int character );
 static void dictionary_Add( struct Dictionary* dict, int prefix, int character, int value );
 static void dictionary_Destroy( struct Dictionary* dict );
@@ -295,7 +298,6 @@ void write_code( FILE* output, unsigned int code, unsigned int code_size )
 
 
     /* only < 8 bits left in the buffer                          */
-
 }
 
 /*****************************************************************
@@ -311,7 +313,6 @@ void compress( FILE* input, FILE* output )
     int index = -1;
     int P = -1;
 
-    int count = 0;
     C = getc( input );
     while ( C != EOF )
     {
@@ -364,7 +365,6 @@ void decompress( FILE* input, FILE* output )
     int previousCode;
     int currentCode;
     int firstChar;
-    int count = 0;
     currentCode = read_code( input, CODE_SIZE );
     fputc( currentCode, output );
     while ( currentCode != ( ( 1 << CODE_SIZE ) - 1 ) )
@@ -372,13 +372,6 @@ void decompress( FILE* input, FILE* output )
         previousCode = currentCode;
         currentCode = read_code( input, CODE_SIZE );
         if ( currentCode == ( ( 1 << CODE_SIZE ) - 1 ) ) { break; }
-//        if ( g_NodeArray->used >= ( ( 1 << CODE_SIZE ) - 1 ) )
-//        {
-//            // full, re-initialize it
-//            printf( "full %d\n", ++count );
-//            dictionaryArrayReInit();
-//            previousCode = currentCode;
-//        }
         if ( currentCode >= g_NodeArray->used )
         {
             // not found
@@ -454,14 +447,16 @@ struct Dictionary* dictionary_init()
     int i;
     ret = ( struct Dictionary* )malloc( sizeof( struct Dictionary ) );
     memset( ret, 0, sizeof( struct Dictionary ) );
+    ret->map = new std::map<std::pair<int, int>, int>();
     for ( i = 0; i < 256; i++ ) // ASCII
     {
-        node = ( struct DictionaryNode* )malloc( sizeof( struct DictionaryNode ) );
-        node->value = i;
-        node->prefix = -1;
-        node->character = i;
-        node->next = NULL;
-        dictionary_appendNode( ret, node );
+//        node = ( struct DictionaryNode* )malloc( sizeof( struct DictionaryNode ) );
+//        node->value = i;
+//        node->prefix = -1;
+//        node->character = i;
+//        node->next = NULL;
+//        dictionary_appendNode( ret, node );
+        dictionary_appendNode( ret, -1, i, i );
     }
     ret->cnt = 256;
     return ret;
@@ -469,45 +464,62 @@ struct Dictionary* dictionary_init()
 
 
 // add node to the list
-static void dictionary_appendNode( struct Dictionary* dict, struct DictionaryNode* node )
+//static void dictionary_appendNode( struct Dictionary* dict, struct DictionaryNode* node )
+//{
+//    if ( dict->dictionary != NULL ) { dict->tail->next = node; }
+//    else { dict->dictionary = node; }
+//    dict->tail = node;
+//    node->next = NULL;
+//    dict->cnt += 1;
+
+//    dict->map->insert( std::make_pair( std::make_pair( node->prefix, node->character ), node->value ) );
+//}
+
+static void dictionary_appendNode( struct Dictionary* dict, int prefix, int character, int value )
 {
-    if ( dict->dictionary != NULL ) { dict->tail->next = node; }
-    else { dict->dictionary = node; }
-    dict->tail = node;
-    node->next = NULL;
     dict->cnt += 1;
+    dict->map->insert( std::make_pair( std::make_pair( prefix, character ), value ) );
 }
 
 // destory the whole dictionary down to NULL
 static void dictionary_Destroy( struct Dictionary* dict )
 {
-    while ( dict->dictionary != NULL )
-    {
-        struct DictionaryNode* del = dict->dictionary;
-        dict->dictionary = dict->dictionary->next; /* the head now links to the next element */
-        free( del );
-    }
+    delete dict->map;
+//    while ( dict->dictionary != NULL )
+//    {
+//        struct DictionaryNode* del = dict->dictionary;
+//        dict->dictionary = dict->dictionary->next; /* the head now links to the next element */
+//        free( del );
+//    }
     free( dict );
 }
 
 // is prefix + character in the dictionary?
 static int dictionary_Lookup( struct Dictionary* dict, int prefix, int character )
 {
-    struct DictionaryNode* node;
-    for ( node = dict->dictionary; node != NULL; node = node->next ) // ...traverse forward
+    std::map<std::pair<int, int>, int>::iterator ite = dict->map->find( std::make_pair( prefix, character ) );
+    if ( ite == dict->map->end() )
     {
-        if ( node->prefix == prefix && node->character == character ) { return node->value; }
+        return -1;
     }
-    return -1;
+    return ite->second;
+
+//    struct DictionaryNode* node;
+//    for ( node = dict->dictionary; node != NULL; node = node->next ) // ...traverse forward
+//    {
+//        if ( node->prefix == prefix && node->character == character ) { return node->value; }
+//    }
+//    return -1;
 }
 
 // add prefix + character to the dictionary
 static void dictionary_Add( struct Dictionary* dict, int prefix, int character, int value )
 {
-    struct DictionaryNode* node;
-    node = ( struct DictionaryNode* )malloc( sizeof( struct DictionaryNode ) );
-    node->value = value;
-    node->prefix = prefix;
-    node->character = character;
-    dictionary_appendNode( dict, node );
+//    struct DictionaryNode* node;
+//    node = ( struct DictionaryNode* )malloc( sizeof( struct DictionaryNode ) );
+//    node->value = value;
+//    node->prefix = prefix;
+//    node->character = character;
+//    dictionary_appendNode( dict, node );
+    dictionary_appendNode( dict, prefix, character, value );
 }

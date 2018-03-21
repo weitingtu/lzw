@@ -53,4 +53,5 @@ dkms.conf
 
 lzw
 data/
+test_dir/
 src.pro.user
